@@ -1,0 +1,106 @@
+# Docker Compose for local development
+# Usage:
+#   docker compose up              # Start MinIO + TypeScript API + Frontend
+#   docker compose --profile python up  # Start with Python API instead
+
+services:
+  # MinIO object storage
+  minio:
+    image: minio/minio:latest
+    ports:
+      - "9000:9000"   # API
+      - "9001:9001"   # Console
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    command: server /data --console-address ":9001"
+    volumes:
+      - minio-data:/data
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # Create default bucket on startup
+  minio-init:
+    image: minio/mc:latest
+    depends_on:
+      minio:
+        condition: service_healthy
+    entrypoint: >
+      /bin/sh -c "
+      mc alias set local http://minio:9000 minioadmin minioadmin;
+      mc mb local/thumbnails --ignore-existing;
+      mc anonymous set public local/thumbnails;
+      exit 0;
+      "
+
+  # TypeScript API (default)
+  api-ts:
+    build:
+      context: .
+      dockerfile: docker/api-ts.Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      PORT: 8080
+      LOCAL_MODE: "true"
+      MINIO_ENDPOINT: http://minio:9000
+      MINIO_ACCESS_KEY: minioadmin
+      MINIO_SECRET_KEY: minioadmin
+      MINIO_BUCKET: thumbnails
+      MINIO_PUBLIC_BASE_URL: http://localhost:9000
+    env_file:
+      - .env.local
+    depends_on:
+      minio-init:
+        condition: service_completed_successfully
+    volumes:
+      - ./typescript:/app/typescript
+      - ./shared:/app/shared
+      - /app/typescript/api-ts/node_modules
+      - /app/typescript/workflow-ts/node_modules
+
+  # Python API (optional, use --profile python)
+  api-python:
+    profiles: ["python"]
+    build:
+      context: .
+      dockerfile: docker/api-python.Dockerfile
+    ports:
+      - "8080:8000"
+    environment:
+      PORT: 8000
+      LOCAL_MODE: "true"
+      MINIO_ENDPOINT: http://minio:9000
+      MINIO_ACCESS_KEY: minioadmin
+      MINIO_SECRET_KEY: minioadmin
+      MINIO_BUCKET: thumbnails
+      MINIO_PUBLIC_BASE_URL: http://localhost:9000
+    env_file:
+      - .env.local
+    depends_on:
+      minio-init:
+        condition: service_completed_successfully
+    volumes:
+      - ./python:/app/python
+      - ./shared:/app/shared
+
+  # Frontend (Vite dev server)
+  frontend:
+    build:
+      context: .
+      dockerfile: docker/frontend.Dockerfile
+    ports:
+      - "5173:5173"
+    environment:
+      VITE_API_HOST: http://localhost:8080
+    volumes:
+      - ./frontend:/app/frontend
+      - /app/frontend/node_modules
+    depends_on:
+      - api-ts
+
+volumes:
+  minio-data:

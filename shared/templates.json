@@ -1,0 +1,22 @@
+{
+  "bottom-bar": {
+    "label": "Bottom Bar",
+    "description": "Text overlay at the bottom of the image"
+  },
+  "left-panel": {
+    "label": "Left Panel",
+    "description": "Vertical panel on the left side"
+  },
+  "center-box": {
+    "label": "Center Box",
+    "description": "Centered box with text"
+  },
+  "overlay-bottom": {
+    "label": "Overlay Bottom",
+    "description": "Text at bottom with drop shadow, no background"
+  },
+  "overlay-center": {
+    "label": "Overlay Center",
+    "description": "Centered text with drop shadow, no background"
+  }
+}

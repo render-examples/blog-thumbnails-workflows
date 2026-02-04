@@ -1,0 +1,101 @@
+# Render Blueprint: Blog Thumbnail Generator
+# Note: Workflows (workflow-python, workflow-ts) are deployed separately via Render Workflows
+
+projects:
+  - name: blog-thumbnail-generator-with-workflows
+    environments:
+      - name: production
+        services:
+          - type: web
+            name: blog-thumb-frontend
+            runtime: static
+            rootDir: frontend
+            buildCommand: npm install && npm run build
+            staticPublishPath: dist
+            routes:
+              - type: rewrite
+                source: /*
+                destination: /index.html
+            envVars:
+              - key: VITE_API_HOST
+                fromService:
+                  name: blog-thumb-api-ts  # Change to blog-thumb-api-python if using Python
+                  type: web
+                  property: host
+
+          - type: web
+            name: blog-thumb-api-ts
+            runtime: node
+            plan: starter
+            rootDir: typescript/api-ts
+            buildCommand: npm install && npm run build
+            startCommand: npm run start
+            envVars:
+              - key: PORT
+                value: 8080
+              - key: RENDER_API_KEY
+                sync: false
+              - key: WORKFLOW_SLUG
+                sync: false  # e.g., "blog-thumb-workflow-ts"
+              - key: OPENAI_API_KEY
+                sync: false  # For content moderation (optional)
+              - key: MINIO_ENDPOINT
+                fromService:
+                  name: minio-server
+                  type: web
+                  envVarKey: RENDER_EXTERNAL_URL
+              - key: MINIO_ACCESS_KEY
+                fromService:
+                  name: minio-server
+                  type: web
+                  envVarKey: MINIO_ROOT_USER
+              - key: MINIO_SECRET_KEY
+                fromService:
+                  name: minio-server
+                  type: web
+                  envVarKey: MINIO_ROOT_PASSWORD
+              - key: MINIO_BUCKET
+                value: thumbnails
+              - key: MINIO_PUBLIC_BASE_URL
+                fromService:
+                  name: minio-server
+                  type: web
+                  envVarKey: RENDER_EXTERNAL_URL
+
+          # MinIO object storage for thumbnail images
+          - type: web
+            name: minio-server
+            runtime: image
+            plan: starter
+            image:
+              url: docker.io/minio/minio:latest
+            healthCheckPath: /minio/health/live
+            dockerCommand: minio server /data --address 0.0.0.0:$PORT --console-address 0.0.0.0:9001
+            autoDeploy: false
+            disk:
+              name: minio-data
+              mountPath: /data
+              sizeGB: 10
+            envVars:
+              - key: MINIO_ROOT_USER
+                generateValue: true
+              - key: MINIO_ROOT_PASSWORD
+                generateValue: true
+              - key: MINIO_BROWSER
+                value: "off"
+
+          # Python API (uncomment to use instead of TypeScript)
+          # - type: web
+          #   name: blog-thumb-api-python
+          #   runtime: python
+          #   plan: starter
+          #   rootDir: python/api-python
+          #   buildCommand: pip install -r requirements.txt
+          #   startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+          #   envVars:
+          #     - key: PORT
+          #       value: 8000
+          #     - key: RENDER_API_KEY
+          #       sync: false
+          #     - key: WORKFLOW_SLUG
+          #       sync: false

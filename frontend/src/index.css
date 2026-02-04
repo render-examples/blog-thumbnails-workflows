@@ -1,0 +1,13 @@
+@import "tailwindcss";
+@source "../index.html";
+@source "./**/*.{ts,tsx}";
+@source "../node_modules/workflow-visualizer/src/**/*.{ts,tsx}";
+
+body {
+  font-family: "Inter", "Helvetica Neue", Arial, sans-serif;
+}
+
+/* Override workflow visualizer box-sizing */
+.space-y-6 {
+  box-sizing: content-box;
+}

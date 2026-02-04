@@ -1,0 +1,92 @@
+{
+  "inter": {
+    "name": "Inter",
+    "fallback": "Arial, sans-serif",
+    "url": "https://raw.githubusercontent.com/google/fonts/main/ofl/inter/Inter%5Bopsz%2Cwght%5D.ttf"
+  },
+  "roboto": {
+    "name": "Roboto",
+    "fallback": "Arial, sans-serif",
+    "url": "https://raw.githubusercontent.com/google/fonts/main/ofl/roboto/Roboto%5Bwdth%2Cwght%5D.ttf"
+  },
+  "poppins": {
+    "name": "Poppins",
+    "fallback": "Arial, sans-serif",
+    "url": "https://raw.githubusercontent.com/google/fonts/main/ofl/poppins/Poppins-SemiBold.ttf"
+  },
+  "montserrat": {
+    "name": "Montserrat",
+    "fallback": "Arial, sans-serif",
+    "url": "https://raw.githubusercontent.com/google/fonts/main/ofl/montserrat/Montserrat%5Bwght%5D.ttf"
+  },
+  "raleway": {
+    "name": "Raleway",
+    "fallback": "Arial, sans-serif",
+    "url": "https://raw.githubusercontent.com/google/fonts/main/ofl/raleway/Raleway%5Bwght%5D.ttf"
+  },
+  "oswald": {
+    "name": "Oswald",
+    "fallback": "Arial, sans-serif",
+    "url": "https://raw.githubusercontent.com/google/fonts/main/ofl/oswald/Oswald%5Bwght%5D.ttf"
+  },
+  "bebas-neue": {
+    "name": "Bebas Neue",
+    "fallback": "Impact, sans-serif",
+    "url": "https://raw.githubusercontent.com/google/fonts/main/ofl/bebasneue/BebasNeue-Regular.ttf"
+  },
+  "playfair": {
+    "name": "Playfair Display",
+    "fallback": "Georgia, serif",
+    "url": "https://raw.githubusercontent.com/google/fonts/main/ofl/playfairdisplay/PlayfairDisplay%5Bwght%5D.ttf"
+  },
+  "merriweather": {
+    "name": "Merriweather",
+    "fallback": "Georgia, serif",
+    "url": "https://raw.githubusercontent.com/google/fonts/main/ofl/merriweather/Merriweather%5Bwght%5D.ttf"
+  },
+  "lora": {
+    "name": "Lora",
+    "fallback": "Georgia, serif",
+    "url": "https://raw.githubusercontent.com/google/fonts/main/ofl/lora/Lora%5Bwght%5D.ttf"
+  },
+  "space-mono": {
+    "name": "Space Mono",
+    "fallback": "'Courier New', monospace",
+    "url": "https://raw.githubusercontent.com/google/fonts/main/ofl/spacemono/SpaceMono-Bold.ttf"
+  },
+  "jetbrains-mono": {
+    "name": "JetBrains Mono",
+    "fallback": "'Courier New', monospace",
+    "url": "https://raw.githubusercontent.com/google/fonts/main/ofl/jetbrainsmono/JetBrainsMono%5Bwght%5D.ttf"
+  },
+  "bangers": {
+    "name": "Bangers",
+    "fallback": "Impact, sans-serif",
+    "url": "https://raw.githubusercontent.com/google/fonts/main/ofl/bangers/Bangers-Regular.ttf"
+  },
+  "pacifico": {
+    "name": "Pacifico",
+    "fallback": "cursive",
+    "url": "https://raw.githubusercontent.com/google/fonts/main/ofl/pacifico/Pacifico-Regular.ttf"
+  },
+  "permanent-marker": {
+    "name": "Permanent Marker",
+    "fallback": "cursive",
+    "url": "https://raw.githubusercontent.com/google/fonts/main/apache/permanentmarker/PermanentMarker-Regular.ttf"
+  },
+  "righteous": {
+    "name": "Righteous",
+    "fallback": "Impact, sans-serif",
+    "url": "https://raw.githubusercontent.com/google/fonts/main/ofl/righteous/Righteous-Regular.ttf"
+  },
+  "creepster": {
+    "name": "Creepster",
+    "fallback": "cursive",
+    "url": "https://raw.githubusercontent.com/google/fonts/main/ofl/creepster/Creepster-Regular.ttf"
+  },
+  "press-start-2p": {
+    "name": "Press Start 2P",
+    "fallback": "monospace",
+    "url": "https://raw.githubusercontent.com/google/fonts/main/ofl/pressstart2p/PressStart2P-Regular.ttf"
+  }
+}

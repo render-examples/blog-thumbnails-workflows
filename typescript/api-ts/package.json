@@ -1,0 +1,35 @@
+{
+  "name": "blog-thumb-api-ts",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "lint": "biome lint src/",
+    "format": "biome format --write src/",
+    "check": "biome check --write src/"
+  },
+  "dependencies": {
+    "@aws-sdk/client-s3": "latest",
+    "@google/genai": "^1.38.0",
+    "@renderinc/sdk": "latest",
+    "cheerio": "latest",
+    "cors": "latest",
+    "dotenv": "latest",
+    "express": "latest",
+    "express-rate-limit": "latest",
+    "helmet": "latest",
+    "openai": "^6.16.0",
+    "sharp": "^0.34.5",
+    "zod": "latest"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.0.0",
+    "@types/cors": "latest",
+    "@types/express": "latest",
+    "@types/node": "latest",
+    "tsx": "latest",
+    "typescript": "latest"
+  }
+}

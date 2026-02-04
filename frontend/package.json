@@ -1,0 +1,28 @@
+{
+  "name": "blog-thumb-frontend",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@headlessui/react": "latest",
+    "react": "latest",
+    "react-dom": "latest",
+    "react-router-dom": "latest",
+    "workflow-visualizer": "github:render-examples/workflow-visualizer"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "latest",
+    "@types/react": "^19.2.9",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "latest",
+    "autoprefixer": "latest",
+    "postcss": "latest",
+    "tailwindcss": "latest",
+    "typescript": "latest",
+    "vite": "latest"
+  }
+}

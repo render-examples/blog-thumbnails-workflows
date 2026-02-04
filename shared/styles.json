@@ -1,0 +1,14 @@
+{
+  "photorealistic": "Photorealistic, high-detail professional photography, natural lighting",
+  "cinematic": "Cinematic film still, dramatic lighting, shallow depth of field, movie aesthetic",
+  "cartoon": "Clean cartoon illustration, bold shapes, simple shading, flat colors",
+  "anime": "Anime style illustration, vibrant colors, expressive, Japanese animation aesthetic",
+  "3d": "3D render, studio lighting, clean materials, sharp detail, Blender/Cinema4D style",
+  "pixel-art": "Pixel art, retro video game aesthetic, 16-bit style, crisp pixels",
+  "watercolor": "Watercolor painting, soft edges, flowing colors, artistic brushstrokes",
+  "oil-painting": "Oil painting, rich textures, classical art style, visible brushwork",
+  "sketch": "Pencil sketch, hand-drawn, line art, monochromatic with subtle shading",
+  "minimalist": "Minimalist design, flat colors, simple geometric shapes, clean composition",
+  "neon": "Neon cyberpunk aesthetic, glowing lights, dark background, synthwave colors",
+  "vintage": "Vintage retro style, muted colors, film grain, 1970s photography aesthetic"
+}
