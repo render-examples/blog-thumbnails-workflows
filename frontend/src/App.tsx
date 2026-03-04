@@ -119,8 +119,9 @@ function GeneratePage() {
         setErrorMessage(data.detail || data.error || `HTTP ${response.status}`);
         return;
       }
-      // API returns: { task_id, status, results: { title, results: [...], failures } }
-      const images = data.results?.results as GenerationResult[] | undefined;
+      const rawResults = data.results;
+      const taskResult = Array.isArray(rawResults) ? rawResults[0] : rawResults;
+      const images = taskResult?.results as GenerationResult[] | undefined;
       if (images && images.length > 0) {
         setTaskId(data.task_id || "");
         setStatus("completed");

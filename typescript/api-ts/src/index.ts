@@ -173,10 +173,11 @@ app.post("/api/generate", generateLimiter, async (req, res) => {
     const result = await render.workflows.runTask(taskSlug, taskInput);
     console.log(`[API] Task completed: ${result.id}, status: ${result.status}`);
     console.log(`[API] Result structure:`, JSON.stringify(result.results, null, 2).slice(0, 500));
+    const taskResult = Array.isArray(result.results) ? result.results[0] : result.results;
     return res.json({
       task_id: result.id,
       status: result.status,
-      results: result.results,
+      results: taskResult,
     });
   } catch (error: unknown) {
     logFullError("Generate error", error);
