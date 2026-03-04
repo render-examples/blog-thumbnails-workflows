@@ -133,6 +133,7 @@ def upload_image(image_data: bytes, key: str, content_type: str = "image/jpeg") 
         Key=key,
         Body=image_data,
         ContentType=content_type,
+        ContentLength=len(image_data),
     )
 
     if public_base_url:
