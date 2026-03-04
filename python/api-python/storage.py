@@ -30,7 +30,10 @@ def get_s3_client():
         aws_access_key_id=minio_config.access_key,
         aws_secret_access_key=minio_config.secret_key,
         region_name="us-east-1",
-        config=BotoConfig(s3={"addressing_style": "path"}),
+        config=BotoConfig(
+            s3={"addressing_style": "path"},
+            request_checksum_calculation="when_required",
+        ),
     )
 
     return _s3_client

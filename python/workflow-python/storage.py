@@ -68,7 +68,10 @@ def _get_client():
         aws_access_key_id=config["access_key"],
         aws_secret_access_key=config["secret_key"],
         region_name="us-east-1",
-        config=BotoConfig(s3={"addressing_style": "path"}),
+        config=BotoConfig(
+            s3={"addressing_style": "path"},
+            request_checksum_calculation="when_required",
+        ),
     )
     return s3, config["bucket"], config["public_base_url"], config["endpoint"]
 
@@ -133,7 +136,6 @@ def upload_image(image_data: bytes, key: str, content_type: str = "image/jpeg") 
         Key=key,
         Body=image_data,
         ContentType=content_type,
-        ContentLength=len(image_data),
     )
 
     if public_base_url:
