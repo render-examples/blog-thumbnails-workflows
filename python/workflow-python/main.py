@@ -27,7 +27,7 @@ app = Workflows(
 
 # Subtask: generates a single thumbnail for one model
 # When called from generate_thumbnails, runs as a distributed subtask
-@app.task
+@app.task(name="generateThumbnail")
 async def generate_thumbnail(
     title: str,
     model: str,
@@ -44,7 +44,7 @@ async def generate_thumbnail(
 
 
 # Main task: spawns subtasks for each model in parallel
-@app.task
+@app.task(name="generateThumbnails")
 async def generate_thumbnails(
     title: str,
     models: list[str],

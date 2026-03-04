@@ -90,7 +90,7 @@ async def generate(request: Request, req: GenerateRequest):
     if flagged:
         raise HTTPException(status_code=400, detail=reason)
 
-    task_id = f"{WORKFLOW_SLUG}/generate_thumbnails"
+    task_id = f"{WORKFLOW_SLUG}/generateThumbnails"
     print(f"[generate] Calling task: {task_id}")
     print(
         f"[generate] Models: {models}, Style: {req.style}, Template: {req.template}, Font: {req.font}"
