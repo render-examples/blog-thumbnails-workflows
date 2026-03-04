@@ -104,6 +104,12 @@ const _generateThumbnails = task(
     console.log(
       `[generateThumbnails] done: ${results.length} succeeded, ${failures.length} failed`,
     );
+
+    if (results.length === 0 && failures.length > 0) {
+      const summary = failures.map((f) => `${f.model}: ${f.error}`).join("; ");
+      throw new Error(`All models failed: ${summary}`);
+    }
+
     return { title, style, template, font, results, failures };
   },
 );

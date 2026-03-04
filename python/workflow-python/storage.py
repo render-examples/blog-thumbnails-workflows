@@ -10,9 +10,11 @@ from PIL import Image
 
 try:
     import boto3
+    from botocore.config import Config as BotoConfig
     from botocore.exceptions import ClientError
 except ImportError:
     boto3 = None
+    BotoConfig = None
     ClientError = Exception
 
 logger = logging.getLogger(__name__)
@@ -65,6 +67,8 @@ def _get_client():
         endpoint_url=config["endpoint"],
         aws_access_key_id=config["access_key"],
         aws_secret_access_key=config["secret_key"],
+        region_name="us-east-1",
+        config=BotoConfig(s3={"addressing_style": "path"}),
     )
     return s3, config["bucket"], config["public_base_url"], config["endpoint"]
 
