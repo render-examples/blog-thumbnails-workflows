@@ -64,8 +64,8 @@ Both the TypeScript and Python implementations are functionally equivalent. Choo
 1. Clone the repository:
 
    ```sh
-   git clone https://github.com/render-examples/blog-thumbnails-workflow.git
-   cd blog-thumbnails-workflow
+   git clone https://github.com/render-examples/blog-thumbnails-workflows.git
+   cd blog-thumbnails-workflows
    ```
 
 2. Create your environment file:
@@ -179,7 +179,7 @@ npm run dev
 
 ## Deploy to Render
 
-1. [Use this template](https://github.com/render-examples/blog-thumbnails-workflow/generate) on GitHub to create your own copy of the repo.
+1. [Use this template](https://github.com/render-examples/blog-thumbnails-workflows/generate) on GitHub to create your own copy of the repo.
 2. Then deploy to Render with the included [Blueprint](https://render.com/docs/infrastructure-as-code):
 
    [![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy)
@@ -200,9 +200,13 @@ Set these on your API service (via the Render Dashboard or `render.yaml`):
 |---|---|
 | `RENDER_API_KEY` | Your [Render API key](https://render.com/docs/api#1-create-an-api-key) for triggering workflow runs |
 | `WORKFLOW_SLUG` | The slug of your deployed workflow (e.g., `blog-thumb-workflow-ts`) |
-| `OPENAI_API_KEY` | OpenAI key (for image generation, and for content moderation if enabled) |
+| `OPENAI_API_KEY` | OpenAI key (for content moderation if enabled) |
 | `GOOGLE_API_KEY` | Google AI key (for Gemini image generation) |
 | `ENABLE_MODERATION` | Set to `true` to enable content moderation via OpenAI (default: disabled) |
+| `MINIO_ENDPOINT` | MinIO server URL (set automatically via Blueprint) |
+| `MINIO_ACCESS_KEY` | MinIO access key (set automatically via Blueprint) |
+| `MINIO_SECRET_KEY` | MinIO secret key (set automatically via Blueprint) |
+| `MINIO_BUCKET` | Bucket name (default: `thumbnails`) |
 
 Set these on your workflow service:
 
