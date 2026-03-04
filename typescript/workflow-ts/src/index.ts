@@ -77,29 +77,24 @@ const _generateThumbnails = task(
   ) => {
     console.log(`[generateThumbnails] starting with ${models.length} models: ${models.join(", ")}`);
 
-    // Spawn subtasks in parallel using Promise.allSettled
-    const settledResults = await Promise.allSettled(
-      models.map((model) =>
-        Promise.resolve(
-          generateThumbnail(title, model, style, template, font, context, extraPrompt),
-        ),
-      ),
-    );
-
-    // Extract successful results
     const results: GenerationResult[] = [];
     const failures: Array<{ model: string; error: string }> = [];
 
-    settledResults.forEach((result, index) => {
-      if (result.status === "fulfilled") {
-        results.push(result.value);
-      } else {
-        failures.push({
-          model: models[index],
-          error: result.reason?.message || "Unknown error",
-        });
-      }
-    });
+    await Promise.all(
+      models.map(async (model) => {
+        try {
+          const result = await generateThumbnail(
+            title, model, style, template, font, context, extraPrompt,
+          );
+          results.push(result);
+        } catch (e: unknown) {
+          failures.push({
+            model,
+            error: e instanceof Error ? e.message : "Unknown error",
+          });
+        }
+      }),
+    );
 
     console.log(
       `[generateThumbnails] done: ${results.length} succeeded, ${failures.length} failed`,

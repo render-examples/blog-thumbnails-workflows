@@ -42,7 +42,7 @@
   "merriweather": {
     "name": "Merriweather",
     "fallback": "Georgia, serif",
-    "url": "https://raw.githubusercontent.com/google/fonts/main/ofl/merriweather/Merriweather%5Bwght%5D.ttf"
+    "url": "https://raw.githubusercontent.com/google/fonts/main/ofl/merriweather/Merriweather%5Bopsz%2Cwdth%2Cwght%5D.ttf"
   },
   "lora": {
     "name": "Lora",
