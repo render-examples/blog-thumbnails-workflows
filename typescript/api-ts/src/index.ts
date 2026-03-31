@@ -212,9 +212,10 @@ app.get("/api/subtasks/:taskId", async (req, res) => {
       .filter((s: { id?: string }) => s.id !== rootTaskRunId);
 
     const subtasksWithResults = await Promise.all(
-      subtasks.map(async (s: { id: string; status: string; startedAt?: string; completedAt?: string }) => {
+      subtasks.map(async (s: { id: string; taskId?: string; status: string; startedAt?: string; completedAt?: string }) => {
         const base = {
           id: s.id,
+          taskId: s.taskId,
           status: s.status,
           startedAt: s.startedAt,
           completedAt: s.completedAt,
@@ -239,6 +240,9 @@ app.get("/api/subtasks/:taskId", async (req, res) => {
     return res.json({
       rootTaskId: rootTaskRunId,
       rootStatus: rootRun.status,
+      rootStartedAt: rootRun.startedAt ?? null,
+      rootCompletedAt: rootRun.completedAt ?? null,
+      rootTaskName: rootRun.taskId ?? null,
       subtasks: subtasksWithResults,
       totalSubtasks: subtasksWithResults.length,
       completedSubtasks: completedCount,

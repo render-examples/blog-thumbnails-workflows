@@ -9,11 +9,12 @@ import {
   ResultsGrid,
   Spinner,
   StatusIndicator,
+  TaskTimeline,
   TemplateSelector,
   WorkflowPage,
 } from "./components";
 import { FONT_OPTIONS, MODEL_OPTIONS, STYLE_OPTIONS } from "./constants";
-import type { Font, GenerationResult, Style, Template } from "./types";
+import type { Font, GenerationResult, Style, TaskTimelineData, Template } from "./types";
 
 function NavLink({ to, children }: { to: string; children: React.ReactNode }) {
   const location = useLocation();
@@ -55,6 +56,7 @@ function GeneratePage() {
   const [taskId, setTaskId] = useState<string>("");
   const [errorMessage, setErrorMessage] = useState<string>("");
   const [results, setResults] = useState<GenerationResult[]>([]);
+  const [timeline, setTimeline] = useState<TaskTimelineData | null>(null);
   const [isFetchingTitle, setIsFetchingTitle] = useState(false);
 
   useEffect(() => {
@@ -97,6 +99,9 @@ function GeneratePage() {
         if (!res.ok) continue;
         const data = await res.json();
 
+        // Update timeline with full subtask data
+        setTimeline(data as TaskTimelineData);
+
         // Show real progress count
         if (data.totalSubtasks > 0) {
           setStatus(`running (${data.completedSubtasks}/${data.totalSubtasks})`);
@@ -119,6 +124,7 @@ function GeneratePage() {
 
         // Check root task terminal states
         if (data.rootStatus === "completed" || data.rootStatus === "succeeded") {
+          setTimeline(data as TaskTimelineData);
           if (seen.size === 0) {
             setStatus("error");
             setErrorMessage("Task completed but returned no images");
@@ -129,6 +135,7 @@ function GeneratePage() {
         }
 
         if (data.rootStatus === "failed" || data.rootStatus === "canceled") {
+          setTimeline(data as TaskTimelineData);
           setStatus("error");
           setErrorMessage(`Task ${data.rootStatus}`);
           return;
@@ -144,6 +151,7 @@ function GeneratePage() {
   const submit = async () => {
     setStatus("starting");
     setResults([]);
+    setTimeline(null);
     setErrorMessage("");
     try {
       const response = await fetch(`${apiBase}/api/generate`, {
@@ -286,12 +294,14 @@ function GeneratePage() {
           type="button"
           onClick={submit}
           className="h-[50px] px-6 border border-white bg-white text-black uppercase tracking-[0.3em] cursor-pointer hover:bg-white/90 disabled:opacity-50 disabled:cursor-not-allowed"
-          disabled={!title || status === "starting" || status === "running"}
+          disabled={!title || status === "starting" || status.startsWith("running")}
         >
           Generate
         </button>
         <StatusIndicator status={status} taskId={taskId} errorMessage={errorMessage} />
       </section>
+
+      {timeline && <TaskTimeline data={timeline} />}
 
       <ResultsGrid results={results} />
     </>

@@ -40,3 +40,23 @@ export type GenerationResult = {
   model: string;
   image_url: string;
 };
+
+export type SubtaskInfo = {
+  id: string;
+  taskId?: string;
+  status: string;
+  startedAt: string | null;
+  completedAt: string | null;
+  results: GenerationResult | null;
+};
+
+export type TaskTimelineData = {
+  rootTaskId: string;
+  rootStatus: string;
+  rootStartedAt: string | null;
+  rootCompletedAt: string | null;
+  rootTaskName: string | null;
+  subtasks: SubtaskInfo[];
+  totalSubtasks: number;
+  completedSubtasks: number;
+};

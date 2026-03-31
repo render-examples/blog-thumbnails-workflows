@@ -6,5 +6,6 @@ export { ModelSelector } from "./ModelSelector";
 export { ResultsGrid } from "./ResultsGrid";
 export { Spinner } from "./Spinner";
 export { StatusIndicator } from "./StatusIndicator";
+export { TaskTimeline } from "./TaskTimeline";
 export { TemplateSelector } from "./TemplateSelector";
 export { WorkflowPage } from "./WorkflowPage";
