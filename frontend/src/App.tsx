@@ -85,6 +85,42 @@ function GeneratePage() {
     return () => clearTimeout(timer);
   }, [apiBase, blogUrl, title]);
 
+  const pollForResults = async (id: string) => {
+    const POLL_INTERVAL_MS = 3000;
+    const MAX_POLLS = 200;
+    for (let i = 0; i < MAX_POLLS; i++) {
+      await new Promise((r) => setTimeout(r, POLL_INTERVAL_MS));
+      try {
+        const res = await fetch(`${apiBase}/api/status/${encodeURIComponent(id)}`);
+        if (!res.ok) continue;
+        const data = await res.json();
+
+        if (data.status === "completed") {
+          const taskResult = data.results;
+          const images = taskResult?.results as GenerationResult[] | undefined;
+          if (images && images.length > 0) {
+            setResults(images);
+            setStatus("completed");
+          } else {
+            setStatus("error");
+            setErrorMessage("Task completed but returned no images");
+          }
+          return;
+        }
+
+        if (data.status === "failed" || data.status === "canceled") {
+          setStatus("error");
+          setErrorMessage(data.error || `Task ${data.status}`);
+          return;
+        }
+      } catch {
+        // Network blip — keep polling
+      }
+    }
+    setStatus("error");
+    setErrorMessage("Timed out waiting for results");
+  };
+
   const submit = async () => {
     setStatus("starting");
     setResults([]);
@@ -119,15 +155,28 @@ function GeneratePage() {
         setErrorMessage(data.detail || data.error || `HTTP ${response.status}`);
         return;
       }
-      const rawResults = data.results;
-      const taskResult = Array.isArray(rawResults) ? rawResults[0] : rawResults;
-      const images = taskResult?.results as GenerationResult[] | undefined;
-      if (images && images.length > 0) {
-        setTaskId(data.task_id || "");
-        setStatus("completed");
-        setResults(images);
+
+      // Local mode returns results directly
+      if (data.results) {
+        const rawResults = data.results;
+        const taskResult = Array.isArray(rawResults) ? rawResults[0] : rawResults;
+        const images = taskResult?.results as GenerationResult[] | undefined;
+        if (images && images.length > 0) {
+          setTaskId(data.task_id || "");
+          setStatus("completed");
+          setResults(images);
+          return;
+        }
+      }
+
+      // Remote mode: poll for completion
+      if (data.task_id) {
+        setTaskId(data.task_id);
+        setStatus("running");
+        await pollForResults(data.task_id);
         return;
       }
+
       setStatus("error");
       setErrorMessage("No results returned");
     } catch (err) {

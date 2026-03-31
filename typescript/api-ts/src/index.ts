@@ -170,17 +170,28 @@ app.post("/api/generate", generateLimiter, async (req, res) => {
 
   try {
     console.log(`[API] Starting task: ${taskSlug}`);
-    const result = await render.workflows.runTask(taskSlug, taskInput);
-    console.log(`[API] Task completed: ${result.id}, status: ${result.status}`);
-    console.log(`[API] Result structure:`, JSON.stringify(result.results, null, 2).slice(0, 500));
-    const taskResult = Array.isArray(result.results) ? result.results[0] : result.results;
+    const result = await render.workflows.startTask(taskSlug, taskInput);
+    console.log(`[API] Task started: ${result.taskRunId}`);
     return res.json({
-      task_id: result.id,
-      status: result.status,
-      results: taskResult,
+      task_id: result.taskRunId,
+      status: "running",
     });
   } catch (error: unknown) {
     logFullError("Generate error", error);
+    const { status, message } = toSdkErrorResponse(error);
+    return res.status(status).json({ error: message });
+  }
+});
+
+/** GET /api/status/:taskId - Get task run status and results. */
+app.get("/api/status/:taskId", async (req, res) => {
+  try {
+    const taskRun = await render.workflows.getTaskRun(req.params.taskId);
+    const rawResults = taskRun.results || [];
+    const results =
+      Array.isArray(rawResults) && rawResults.length > 0 ? rawResults[0] : null;
+    return res.json({ status: taskRun.status, results });
+  } catch (error: unknown) {
     const { status, message } = toSdkErrorResponse(error);
     return res.status(status).json({ error: message });
   }

@@ -97,7 +97,7 @@ async def generate(request: Request, req: GenerateRequest):
     )
 
     try:
-        task_run = await workflows_client.workflows.run_task(
+        task_run = await workflows_client.workflows.start_task(
             task_identifier=task_id,
             input_data=[
                 req.title,
