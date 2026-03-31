@@ -197,6 +197,58 @@ app.get("/api/status/:taskId", async (req, res) => {
   }
 });
 
+/** GET /api/subtasks/:taskId - Progressive subtask results for a parent task run. */
+app.get("/api/subtasks/:taskId", async (req, res) => {
+  const rootTaskRunId = req.params.taskId;
+
+  try {
+    const [rootRun, subtaskRuns] = await Promise.all([
+      render.workflows.getTaskRun(rootTaskRunId),
+      render.workflows.listTaskRuns({ rootTaskRunId: [rootTaskRunId] }),
+    ]);
+
+    const subtasks = subtaskRuns
+      .map((s) => s.taskRun ?? s)
+      .filter((s: { id?: string }) => s.id !== rootTaskRunId);
+
+    const subtasksWithResults = await Promise.all(
+      subtasks.map(async (s: { id: string; status: string; startedAt?: string; completedAt?: string }) => {
+        const base = {
+          id: s.id,
+          status: s.status,
+          startedAt: s.startedAt,
+          completedAt: s.completedAt,
+          results: null as unknown,
+        };
+        if (s.status === "completed" || s.status === "succeeded") {
+          try {
+            const run = await render.workflows.getTaskRun(s.id);
+            base.results = Array.isArray(run.results) && run.results.length > 0
+              ? run.results[0]
+              : null;
+          } catch { /* skip if fetch fails */ }
+        }
+        return base;
+      }),
+    );
+
+    const completedCount = subtasksWithResults.filter(
+      (s) => s.status === "completed" || s.status === "succeeded",
+    ).length;
+
+    return res.json({
+      rootTaskId: rootTaskRunId,
+      rootStatus: rootRun.status,
+      subtasks: subtasksWithResults,
+      totalSubtasks: subtasksWithResults.length,
+      completedSubtasks: completedCount,
+    });
+  } catch (error: unknown) {
+    const { status, message } = toSdkErrorResponse(error);
+    return res.status(status).json({ error: message });
+  }
+});
+
 /** GET /api/gallery - List all images in the gallery. */
 app.get("/api/gallery", async (_, res) => {
   const s3 = getS3Client();

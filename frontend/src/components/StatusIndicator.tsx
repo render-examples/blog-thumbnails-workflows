@@ -42,14 +42,17 @@ export function StatusIndicator({ status, taskId, errorMessage }: Props) {
   const isActive = status === "starting" || status === "running" || status.startsWith("running (");
   const isError = status === "error" || status === "failed" || status === "timeout";
 
+  const progressMatch = status.match(/running \((\d+)\/(\d+)\)/);
+  const hasProgress = !!progressMatch;
+
   useEffect(() => {
-    if (!isActive) {
+    if (!isActive || hasProgress) {
       setMessageIndex(0);
       return;
     }
     let timeout: ReturnType<typeof setTimeout>;
     const scheduleNext = () => {
-      const delay = 1500 + Math.random() * 2000; // 1.5s to 3.5s
+      const delay = 1500 + Math.random() * 2000;
       timeout = setTimeout(() => {
         setMessageIndex((i) => (i + 1) % PROGRESS_MESSAGES.length);
         scheduleNext();
@@ -57,14 +60,20 @@ export function StatusIndicator({ status, taskId, errorMessage }: Props) {
     };
     scheduleNext();
     return () => clearTimeout(timeout);
-  }, [isActive]);
+  }, [isActive, hasProgress]);
 
-  // Show progress count if available (e.g., "running (2/3)")
-  const progressMatch = status.match(/running \((\d+)\/(\d+)\)/);
-  const progressLabel = progressMatch
-    ? `${PROGRESS_MESSAGES[messageIndex]} (${progressMatch[1]}/${progressMatch[2]})`
-    : PROGRESS_MESSAGES[messageIndex];
-  const displayLabel = isActive ? progressLabel : config.label;
+  let displayLabel: string;
+  if (!isActive) {
+    displayLabel = config.label;
+  } else if (progressMatch) {
+    const [, completed, total] = progressMatch;
+    const remaining = Number(total) - Number(completed);
+    displayLabel = remaining > 0
+      ? `Generating — ${completed} of ${total} models complete`
+      : `Finishing up — ${total} of ${total} models complete`;
+  } else {
+    displayLabel = PROGRESS_MESSAGES[messageIndex];
+  }
 
   return (
     <div

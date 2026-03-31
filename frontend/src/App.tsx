@@ -88,29 +88,49 @@ function GeneratePage() {
   const pollForResults = async (id: string) => {
     const POLL_INTERVAL_MS = 3000;
     const MAX_POLLS = 200;
+    const seen = new Set<string>();
+
     for (let i = 0; i < MAX_POLLS; i++) {
       await new Promise((r) => setTimeout(r, POLL_INTERVAL_MS));
       try {
-        const res = await fetch(`${apiBase}/api/status/${encodeURIComponent(id)}`);
+        const res = await fetch(`${apiBase}/api/subtasks/${encodeURIComponent(id)}`);
         if (!res.ok) continue;
         const data = await res.json();
 
-        if (data.status === "completed") {
-          const taskResult = data.results;
-          const images = taskResult?.results as GenerationResult[] | undefined;
-          if (images && images.length > 0) {
-            setResults(images);
-            setStatus("completed");
-          } else {
+        // Show real progress count
+        if (data.totalSubtasks > 0) {
+          setStatus(`running (${data.completedSubtasks}/${data.totalSubtasks})`);
+        }
+
+        // Add newly completed images incrementally
+        for (const subtask of data.subtasks ?? []) {
+          if (
+            (subtask.status === "completed" || subtask.status === "succeeded") &&
+            subtask.results &&
+            !seen.has(subtask.id)
+          ) {
+            seen.add(subtask.id);
+            const image = subtask.results as GenerationResult;
+            if (image?.image_url) {
+              setResults((prev) => [...prev, image]);
+            }
+          }
+        }
+
+        // Check root task terminal states
+        if (data.rootStatus === "completed" || data.rootStatus === "succeeded") {
+          if (seen.size === 0) {
             setStatus("error");
             setErrorMessage("Task completed but returned no images");
+          } else {
+            setStatus("completed");
           }
           return;
         }
 
-        if (data.status === "failed" || data.status === "canceled") {
+        if (data.rootStatus === "failed" || data.rootStatus === "canceled") {
           setStatus("error");
-          setErrorMessage(data.error || `Task ${data.status}`);
+          setErrorMessage(`Task ${data.rootStatus}`);
           return;
         }
       } catch {
