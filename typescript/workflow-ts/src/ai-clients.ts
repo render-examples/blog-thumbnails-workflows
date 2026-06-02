@@ -49,19 +49,26 @@ export async function generateOpenAIImage(model: string, prompt: string): Promis
     }
     return Buffer.from(b64, "base64");
   } else {
-    // DALL-E models: use response_format
+    // DALL-E models: response_format is no longer accepted (the endpoint now
+    // rejects it with a 400), so handle both base64 and URL responses.
     const size = model === "dall-e-3" ? "1792x1024" : "1024x1024";
     const result = await getOpenAI().images.generate({
       model,
       prompt,
       size,
-      response_format: "b64_json",
     });
-    const b64 = result.data?.[0]?.b64_json;
-    if (!b64) {
-      throw new Error("OpenAI DALL-E response did not include image data");
+    const image = result.data?.[0];
+    if (image?.b64_json) {
+      return Buffer.from(image.b64_json, "base64");
     }
-    return Buffer.from(b64, "base64");
+    if (image?.url) {
+      const response = await fetch(image.url);
+      if (!response.ok) {
+        throw new Error(`Failed to download OpenAI image: ${response.status} ${response.statusText}`);
+      }
+      return Buffer.from(await response.arrayBuffer());
+    }
+    throw new Error("OpenAI DALL-E response did not include image data");
   }
 }
 

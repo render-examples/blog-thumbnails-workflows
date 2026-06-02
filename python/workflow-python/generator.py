@@ -71,16 +71,24 @@ def _generate_openai_image(model: str, prompt: str) -> Image.Image:
             output_compression=85,
         )
     else:
-        # DALL-E models: use response_format
+        # DALL-E models: response_format is no longer accepted (the endpoint now
+        # rejects it with a 400), so handle both base64 and URL responses.
         size = "1792x1024" if model == "dall-e-3" else "1024x1024"
         response = client.images.generate(
             model=model,
             prompt=prompt,
             size=size,
-            response_format="b64_json",
         )
 
-    return _image_from_b64(response.data[0].b64_json)
+    image = response.data[0]
+    if getattr(image, "b64_json", None):
+        return _image_from_b64(image.b64_json)
+    if getattr(image, "url", None):
+        import urllib.request
+
+        with urllib.request.urlopen(image.url) as resp:
+            return Image.open(io.BytesIO(resp.read()))
+    raise RuntimeError("OpenAI response did not include image data")
 
 
 def _generate_gemini_image(prompt: str) -> Image.Image:
