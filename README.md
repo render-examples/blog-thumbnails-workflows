@@ -32,7 +32,7 @@ The app includes a React frontend, an API server (available in both TypeScript a
 |---|---|
 | Gemini 3 Pro Preview | Google |
 | GPT-Image-1 | OpenAI |
-| DALL-E 3 | OpenAI |
+| GPT-Image-2 | OpenAI |
 
 ## Project structure
 

@@ -7,8 +7,8 @@
     "name": "GPT-Image-1",
     "provider": "openai"
   },
-  "dall-e-3": {
-    "name": "DALL-E 3",
+  "gpt-image-2": {
+    "name": "GPT-Image-2",
     "provider": "openai"
   }
 }

@@ -74,7 +74,7 @@ const workflowConfig: WorkflowConfig = {
         "Calls the AI provider (OpenAI or Google Gemini) to generate an image based on the style and title. The prompt is built from style description, title, and optional context.",
       position: { x: 150, y: 600 },
       details: [
-        { label: "OpenAI", value: "DALL-E 2, DALL-E 3, GPT Image" },
+        { label: "OpenAI", value: "GPT Image (gpt-image-1, gpt-image-2)" },
         { label: "Google", value: "Gemini 3 Pro Image Preview" },
       ],
     },
