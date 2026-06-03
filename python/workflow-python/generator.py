@@ -58,36 +58,18 @@ def _image_from_b64(data: str) -> Image.Image:
 def _generate_openai_image(model: str, prompt: str) -> Image.Image:
     client = _openai_client()
 
-    # GPT image models use different params than DALL-E
-    is_gpt_image_model = model.startswith("gpt-image")
-
-    if is_gpt_image_model:
-        # GPT image models: always return base64, use output_format not response_format
-        response = client.images.generate(
-            model=model,
-            prompt=prompt,
-            size="1536x1024",  # landscape for blog thumbnails
-            output_format="jpeg",
-            output_compression=85,
-        )
-    else:
-        # DALL-E models: response_format is no longer accepted (the endpoint now
-        # rejects it with a 400), so handle both base64 and URL responses.
-        size = "1792x1024" if model == "dall-e-3" else "1024x1024"
-        response = client.images.generate(
-            model=model,
-            prompt=prompt,
-            size=size,
-        )
+    # GPT Image models return base64 and use output_format (not response_format).
+    response = client.images.generate(
+        model=model,
+        prompt=prompt,
+        size="1536x1024",  # landscape for blog thumbnails
+        output_format="jpeg",
+        output_compression=85,
+    )
 
     image = response.data[0]
     if getattr(image, "b64_json", None):
         return _image_from_b64(image.b64_json)
-    if getattr(image, "url", None):
-        import urllib.request
-
-        with urllib.request.urlopen(image.url) as resp:
-            return Image.open(io.BytesIO(resp.read()))
     raise RuntimeError("OpenAI response did not include image data")
 
 

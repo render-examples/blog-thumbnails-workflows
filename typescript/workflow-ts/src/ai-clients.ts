@@ -31,45 +31,19 @@ export function buildPrompt(title: string, style: Style, context: string, extra:
 }
 
 export async function generateOpenAIImage(model: string, prompt: string): Promise<Buffer> {
-  // GPT image models (gpt-image-1, etc.) use different params than DALL-E
-  const isGptImageModel = model.startsWith("gpt-image");
-
-  if (isGptImageModel) {
-    // GPT image models: always return base64, use output_format not response_format
-    const result = await getOpenAI().images.generate({
-      model,
-      prompt,
-      size: "1536x1024", // landscape for blog thumbnails
-      output_format: "jpeg",
-      output_compression: 85,
-    });
-    const b64 = result.data?.[0]?.b64_json;
-    if (!b64) {
-      throw new Error("OpenAI GPT image response did not include image data");
-    }
-    return Buffer.from(b64, "base64");
-  } else {
-    // DALL-E models: response_format is no longer accepted (the endpoint now
-    // rejects it with a 400), so handle both base64 and URL responses.
-    const size = model === "dall-e-3" ? "1792x1024" : "1024x1024";
-    const result = await getOpenAI().images.generate({
-      model,
-      prompt,
-      size,
-    });
-    const image = result.data?.[0];
-    if (image?.b64_json) {
-      return Buffer.from(image.b64_json, "base64");
-    }
-    if (image?.url) {
-      const response = await fetch(image.url);
-      if (!response.ok) {
-        throw new Error(`Failed to download OpenAI image: ${response.status} ${response.statusText}`);
-      }
-      return Buffer.from(await response.arrayBuffer());
-    }
-    throw new Error("OpenAI DALL-E response did not include image data");
+  // GPT Image models return base64 and use output_format (not response_format).
+  const result = await getOpenAI().images.generate({
+    model,
+    prompt,
+    size: "1536x1024", // landscape for blog thumbnails
+    output_format: "jpeg",
+    output_compression: 85,
+  });
+  const b64 = result.data?.[0]?.b64_json;
+  if (!b64) {
+    throw new Error("OpenAI image response did not include image data");
   }
+  return Buffer.from(b64, "base64");
 }
 
 export async function generateGeminiImage(prompt: string): Promise<Buffer> {

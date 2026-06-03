@@ -179,45 +179,96 @@ npm run dev
 
 ## Deploy to Render
 
+Deployment happens in two parts:
+
+1. The web app (frontend, API, and MinIO) deploys from the included [Blueprint](https://render.com/docs/infrastructure-as-code).
+2. The workflow service deploys separately through the Dashboard, because [Render Workflows](https://render.com/docs/workflows) don't support Blueprints yet.
+
+Do them in order. The workflow service needs to exist before the API can call it, and the API needs the workflow's slug to route runs.
+
+### 1. Deploy the web app (Blueprint)
+
 1. [Use this template](https://github.com/render-examples/blog-thumbnails-workflows/generate) on GitHub to create your own copy of the repo.
-2. Then deploy to Render with the included [Blueprint](https://render.com/docs/infrastructure-as-code):
+2. Deploy to Render with the included Blueprint:
 
    [![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy)
 
-This creates:
+This creates a **static site** for the frontend, a **web service** for the API (TypeScript by default), and a **MinIO** web service for image storage. The Blueprint wires the MinIO credentials into the API automatically. You'll fill in `RENDER_API_KEY` and `WORKFLOW_SLUG` after step 2, since both depend on the workflow service.
 
-- A **static site** for the frontend
-- A **web service** for the API (TypeScript by default)
-- A **MinIO** instance for image storage
+### 2. Deploy the workflow service (Dashboard)
 
-The workflow services (`workflow-ts` or `workflow-python`) are deployed separately through [Render Workflows](https://render.com/docs/workflows) in the Dashboard.
+The workflow service runs the task definitions in `typescript/workflow-ts` or `python/workflow-python`. Create it by hand in the Dashboard:
 
-### Required environment variables
+1. Push your copy of the repo to GitHub, GitLab, or Bitbucket.
+2. In the [Render Dashboard](https://dashboard.render.com), click **New > Workflow**.
+3. Connect your repository.
+4. Set the **Language**, **Root Directory**, **Build Command**, and **Start Command** for the implementation you want:
 
-Set these on your API service (via the Render Dashboard or `render.yaml`):
+   | Field | TypeScript | Python |
+   |---|---|---|
+   | **Language** | Node | Python 3 |
+   | **Root Directory** | `typescript/workflow-ts` | `python/workflow-python` |
+   | **Build Command** | `npm install && npm run build` | `pip install -r requirements.txt` |
+   | **Start Command** | `npm run start` | `python main.py` |
+   | **Instance Type** | `standard` or higher recommended | `standard` or higher recommended |
+
+   Pick **one** implementation. The frontend and API work with either, but the workflow's slug must match `WORKFLOW_SLUG` on the API (step 3).
+
+5. Add the environment variables the tasks need (see the [workflow service table](#workflow-service) below). The image keys and MinIO credentials must be set here too, because the Blueprint doesn't manage this service. Copy the MinIO values from the `minio-server` service created in step 1:
+
+   | Workflow variable | Copy from `minio-server` |
+   |---|---|
+   | `MINIO_ENDPOINT` | the service's external URL (shown at the top of its page) |
+   | `MINIO_ACCESS_KEY` | its `MINIO_ROOT_USER` env var |
+   | `MINIO_SECRET_KEY` | its `MINIO_ROOT_PASSWORD` env var |
+   | `MINIO_PUBLIC_BASE_URL` | the same external URL as `MINIO_ENDPOINT` |
+
+6. Click **Deploy Workflow** and wait for a successful deploy event.
+7. Note the workflow's **slug** (for example, `blog-thumb-workflow-ts`). It appears in the service URL and on each task's page. You'll need it in step 3. Tasks are addressed as `{workflow-slug}/generateThumbnails`.
+
+### 3. Connect the API to the workflow
+
+Back on your **API service**, set the two values left blank by the Blueprint, then trigger a manual deploy:
+
+| Variable | Value |
+|---|---|
+| `WORKFLOW_SLUG` | the workflow slug from step 2.7 (for example, `blog-thumb-workflow-ts`) |
+| `RENDER_API_KEY` | a [Render API key](https://render.com/docs/api#1-create-an-api-key) with access to your workspace |
+
+The API uses `RENDER_API_KEY` to authenticate and `WORKFLOW_SLUG` to build the task identifier (`{WORKFLOW_SLUG}/generateThumbnails`) it calls through the SDK.
+
+### Environment variables
+
+#### API service
+
+The Blueprint sets the MinIO variables automatically. The rest you set yourself.
+
+| Variable | Description | Set by |
+|---|---|---|
+| `RENDER_API_KEY` | [Render API key](https://render.com/docs/api#1-create-an-api-key) for triggering workflow runs | You (step 3) |
+| `WORKFLOW_SLUG` | Slug of your deployed workflow service (for example, `blog-thumb-workflow-ts`) | You (step 3) |
+| `OPENAI_API_KEY` | OpenAI key, used for content moderation when enabled | You |
+| `GOOGLE_API_KEY` | Google AI key | You |
+| `ENABLE_MODERATION` | Set to `true` to enable content moderation via OpenAI (default: disabled) | You (optional) |
+| `MINIO_ENDPOINT` | MinIO server URL | Blueprint |
+| `MINIO_ACCESS_KEY` | MinIO access key | Blueprint |
+| `MINIO_SECRET_KEY` | MinIO secret key | Blueprint |
+| `MINIO_BUCKET` | Bucket name (default: `thumbnails`) | Blueprint |
+| `MINIO_PUBLIC_BASE_URL` | Public base URL for serving images | Blueprint |
+
+#### Workflow service
+
+Set all of these yourself in the Dashboard. The MinIO values come from the `minio-server` service (see step 2.5).
 
 | Variable | Description |
 |---|---|
-| `RENDER_API_KEY` | Your [Render API key](https://render.com/docs/api#1-create-an-api-key) for triggering workflow runs |
-| `WORKFLOW_SLUG` | The slug of your deployed workflow (e.g., `blog-thumb-workflow-ts`) |
-| `OPENAI_API_KEY` | OpenAI key (for content moderation if enabled) |
-| `GOOGLE_API_KEY` | Google AI key (for Gemini image generation) |
-| `ENABLE_MODERATION` | Set to `true` to enable content moderation via OpenAI (default: disabled) |
-| `MINIO_ENDPOINT` | MinIO server URL (set automatically via Blueprint) |
-| `MINIO_ACCESS_KEY` | MinIO access key (set automatically via Blueprint) |
-| `MINIO_SECRET_KEY` | MinIO secret key (set automatically via Blueprint) |
-| `MINIO_BUCKET` | Bucket name (default: `thumbnails`) |
-
-Set these on your workflow service:
-
-| Variable | Description |
-|---|---|
-| `OPENAI_API_KEY` | OpenAI key (for image generation) |
-| `GOOGLE_API_KEY` | Google AI key (for Gemini image generation) |
+| `OPENAI_API_KEY` | OpenAI key, used for image generation with GPT Image models |
+| `GOOGLE_API_KEY` | Google AI key, used for Gemini image generation |
 | `MINIO_ENDPOINT` | MinIO server URL |
 | `MINIO_ACCESS_KEY` | MinIO access key |
 | `MINIO_SECRET_KEY` | MinIO secret key |
 | `MINIO_BUCKET` | Bucket name (default: `thumbnails`) |
+| `MINIO_PUBLIC_BASE_URL` | Public base URL for serving images |
 
 ## Features
 
