@@ -270,6 +270,24 @@ Set all of these yourself in the Dashboard. The MinIO values come from the `mini
 | `MINIO_BUCKET` | Bucket name (default: `thumbnails`) |
 | `MINIO_PUBLIC_BASE_URL` | Public base URL for serving images |
 
+### Troubleshooting
+
+Most deploy problems come from the two services not being wired together, or from the workflow service missing a key. Check the failing service's logs in the Dashboard first, then work through the table.
+
+| Symptom | Likely cause | Fix |
+|---|---|---|
+| API returns `WORKFLOW_SLUG not configured` | `WORKFLOW_SLUG` is unset on the API | Set it to the workflow service's slug (step 3), then redeploy the API |
+| API returns 401 or `Unauthorized` when generating | Missing or wrong `RENDER_API_KEY` | Set a valid [Render API key](https://render.com/docs/api#1-create-an-api-key) that belongs to the same workspace as the workflow, then redeploy |
+| Run fails with "task not found" | `WORKFLOW_SLUG` doesn't match the deployed workflow, or the task didn't register | Confirm the slug matches exactly, and that the deploy logs show `generateThumbnails` and `generateThumbnail` registering on startup |
+| Workflow task fails with `MinIO credentials not configured` | MinIO env vars aren't set on the workflow service | The Blueprint only wires MinIO into the API. Copy the values onto the workflow service too (see step 2.5) |
+| Generated images don't load in the gallery | `MINIO_PUBLIC_BASE_URL` missing or wrong | Set it on both the API and workflow service to the `minio-server` external URL |
+| Task fails with `The model '...' does not exist` | The selected model was deprecated or your OpenAI org lacks access | Use a supported model from `shared/models.json`. Check availability on the [OpenAI models page](https://platform.openai.com/docs/models) |
+| Workflow build fails | Wrong root directory or build command | TypeScript: root `typescript/workflow-ts`, build `npm install && npm run build`. Python: root `python/workflow-python`, build `pip install -r requirements.txt` |
+| Workflow deploys but exits on start | Wrong start command | TypeScript: `npm run start`. Python: `python main.py` |
+| Runs stay `pending` for a long time | Workspace hit its concurrent-run limit | Wait for in-progress runs to finish, cancel stuck runs, or add concurrency. Extra workflow services don't raise the limit |
+
+For deeper Workflows debugging, see the [Render Workflows docs](https://render.com/docs/workflows).
+
 ## Features
 
 ### Image generation
